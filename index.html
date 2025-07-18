@@ -1,54 +1,46 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My App</title>
     <style>
-      /* Essential styles for a true full-screen experience */
-      html,
-      body {
-        height: 100%;
-        width: 100%;
-        margin: 0;
-        padding: 0;
-        overflow: hidden; /* Prevent parent page from scrolling */
-      }
-      iframe {
-        width: 100%;
-        height: 100%;
-        border: none; /* Replaces frameborder="0" */
-        display: block; /* Removes any potential whitespace below the iframe */
-      }
+        html, body { height: 100%; width: 100%; margin: 0; padding: 0; overflow: hidden; }
+        iframe { width: 100%; height: 100%; border: none; display: block; }
     </style>
-  </head>
-  <body>
-    <iframe
-      id="appFrame"
-      src="https://script.google.com/macros/s/AKfycbz4vY3Wwgbfn89hR1TTToV1XKCn_MGri3UkpKTLrX34F0BBuSKrgEdEcLK2YVBwXFJd/exec"
-    ></iframe>
+</head>
+<body>
+    <!-- The iframe will be created by script now -->
+    <div id="iframe-container" style="width:100%; height:100%;"></div>
 
     <script>
-      const appFrame = document.getElementById("appFrame")
-      const appUrl = new URL(appFrame.src)
+        const appScriptUrl = "https://script.google.com/macros/s/AKfycbz4vY3Wwgbfn89hR1TTToV1XKCn_MGri3UkpKTLrX34F0BBuSKrgEdEcLK2YVBwXFJd/exec";
 
-      function sendViewportHeight() {
-        // visualViewport.height is the most accurate measure of the usable space on mobile
-        const height = window.visualViewport.height
-        console.log("🚀 ~ sendViewportHeight ~ height:", height)
-        // Send the height in pixels to the iframe.
-        // The second argument is the target origin for security.
-        appFrame.contentWindow.postMessage({ height: height }, "*")
-      }
+        // Dynamically create the iframe with the origin parameter
+        const iframe = document.createElement('iframe');
+        
+        // Pass our current origin to the Apps Script app
+        const urlWithOrigin = appScriptUrl + "?origin=" + encodeURIComponent(window.location.origin);
+        iframe.src = urlWithOrigin;
+        
+        const container = document.getElementById('iframe-container');
+        container.appendChild(iframe);
 
-      // Send the height as soon as the iframe is loaded
-      appFrame.onload = function () {
-        console.log("iframe loaded")
-        sendViewportHeight()
-      }
+        function sendViewportHeight() {
+            const height = window.visualViewport.height;
+            console.log("Parent: Sending height ->", height);
+            
+            // We can now be specific with the target origin because we know it.
+            // Using '*' is also fine, as the security is now handled on the receiver.
+            iframe.contentWindow.postMessage({ height: height }, '*');
+        }
 
-      // Also send it whenever the viewport size changes (e.g., rotation, browser UI appears/disappears)
-      window.visualViewport.addEventListener("resize", sendViewportHeight)
+        iframe.onload = function() {
+            console.log("Parent: iframe loaded. Sending initial height.");
+            sendViewportHeight();
+        };
+
+        window.visualViewport.addEventListener('resize', sendViewportHeight);
     </script>
-  </body>
+</body>
 </html>
