@@ -38,7 +38,7 @@
         console.log("🚀 ~ sendViewportHeight ~ height:", height)
         // Send the height in pixels to the iframe.
         // The second argument is the target origin for security.
-        appFrame.contentWindow.postMessage({ height: height }, appUrl.origin)
+        appFrame.contentWindow.postMessage({ height: height }, "*")
       }
 
       // Send the height as soon as the iframe is loaded
