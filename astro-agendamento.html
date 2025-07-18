@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My App</title>
+    <style>
+      /* Essential styles for a true full-screen experience */
+      html,
+      body {
+        height: 100%;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden; /* Prevent parent page from scrolling */
+      }
+      iframe {
+        width: 100%;
+        height: 100%;
+        border: none; /* Replaces frameborder="0" */
+        display: block; /* Removes any potential whitespace below the iframe */
+      }
+    </style>
+  </head>
+  <body>
+    <iframe
+      id="appFrame"
+      src="https://script.google.com/macros/s/AKfycbz4vY3Wwgbfn89hR1TTToV1XKCn_MGri3UkpKTLrX34F0BBuSKrgEdEcLK2YVBwXFJd/exec"
+    ></iframe>
+
+    <script>
+      const appFrame = document.getElementById("appFrame")
+      const appUrl = new URL(appFrame.src)
+
+      function sendViewportHeight() {
+        // visualViewport.height is the most accurate measure of the usable space on mobile
+        const height = window.visualViewport.height
+        console.log("🚀 ~ sendViewportHeight ~ height:", height)
+        // Send the height in pixels to the iframe.
+        // The second argument is the target origin for security.
+        appFrame.contentWindow.postMessage({ height: height }, appUrl.origin)
+      }
+
+      // Send the height as soon as the iframe is loaded
+      appFrame.onload = function () {
+        console.log("iframe loaded")
+        sendViewportHeight()
+      }
+
+      // Also send it whenever the viewport size changes (e.g., rotation, browser UI appears/disappears)
+      window.visualViewport.addEventListener("resize", sendViewportHeight)
+    </script>
+  </body>
+</html>
