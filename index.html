@@ -10,32 +10,31 @@
     </style>
 </head>
 <body>
-    <!-- The iframe will be created by script now -->
     <div id="iframe-container" style="width:100%; height:100%;"></div>
 
     <script>
+        // Your stable, existing deployment URL
         const appScriptUrl = "https://script.google.com/macros/s/AKfycbz4vY3Wwgbfn89hR1TTToV1XKCn_MGri3UkpKTLrX34F0BBuSKrgEdEcLK2YVBwXFJd/exec";
-
-        // Dynamically create the iframe with the origin parameter
+        
         const iframe = document.createElement('iframe');
         
-        // Pass our current origin to the Apps Script app
-        const urlWithOrigin = appScriptUrl + "?origin=" + encodeURIComponent(window.location.origin);
-        iframe.src = urlWithOrigin;
+        // Construct the URL with BOTH the origin and the cache buster
+        const urlWithParams = appScriptUrl + 
+            "?origin=" + encodeURIComponent(window.location.origin) +
+            "&cacheBuster=" + Date.now(); // <-- THE CACHE-BUSTING PARAMETER
+            
+        iframe.src = urlWithParams;
+        console.log("Parent: Loading iframe with URL:", urlWithParams); // For debugging
         
-        const container = document.getElementById('iframe-container');
-        container.appendChild(iframe);
+        document.getElementById('iframe-container').appendChild(iframe);
 
         function sendViewportHeight() {
             const height = window.visualViewport.height;
             console.log("Parent: Sending height ->", height);
-            
-            // We can now be specific with the target origin because we know it.
-            // Using '*' is also fine, as the security is now handled on the receiver.
             iframe.contentWindow.postMessage({ height: height }, '*');
         }
 
-        iframe.onload = function() {
+        iframe.onload = () => {
             console.log("Parent: iframe loaded. Sending initial height.");
             sendViewportHeight();
         };
