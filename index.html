@@ -3,43 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My App</title>
+    <title>Agendamento Astrolábio Studio</title>
     <style>
-        html, body { height: 100%; width: 100%; margin: 0; padding: 0; overflow: hidden; }
-        iframe { width: 100%; height: 100%; border: none; display: block; }
+        /* Essential styles for a true full-screen experience */
+        html, body {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* Prevent parent page from scrolling */
+        }
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none; /* Replaces frameborder="0" */
+            display: block; /* Removes any potential whitespace below the iframe */
+        }
     </style>
 </head>
 <body>
-    <div id="iframe-container" style="width:100%; height:100%;"></div>
+    <iframe id="appFrame" src="https://script.google.com/macros/s/AKfycbz4vY3Wwgbfn89hR1TTToV1XKCn_MGri3UkpKTLrX34F0BBuSKrgEdEcLK2YVBwXFJd/exec"></iframe>
 
     <script>
-        // Your stable, existing deployment URL
-        const appScriptUrl = "https://script.google.com/macros/s/AKfycbz4vY3Wwgbfn89hR1TTToV1XKCn_MGri3UkpKTLrX34F0BBuSKrgEdEcLK2YVBwXFJd/exec";
-        
-        const iframe = document.createElement('iframe');
-        
-        // Construct the URL with BOTH the origin and the cache buster
-        const urlWithParams = appScriptUrl + 
-            "?origin=" + encodeURIComponent(window.location.origin) +
-            "&cacheBuster=" + Date.now(); // <-- THE CACHE-BUSTING PARAMETER
-            
-        iframe.src = urlWithParams;
-        console.log("Parent: Loading iframe with URL:", urlWithParams); // For debugging
-        
-        document.getElementById('iframe-container').appendChild(iframe);
+        const appFrame = document.getElementById('appFrame');
+        const appUrl = new URL(appFrame.src);
 
         function sendViewportHeight() {
+            // visualViewport.height is the most accurate measure of the usable space on mobile
             const height = window.visualViewport.height;
-            console.log("Parent: Sending height ->", height);
-            iframe.contentWindow.postMessage({ height: height }, '*');
+            // Send the height in pixels to the iframe.
+            // The second argument is the target origin for security.
+            appFrame.contentWindow.postMessage({ height: height }, appUrl.origin);
         }
 
-        iframe.onload = () => {
-            console.log("Parent: iframe loaded. Sending initial height.");
+        // Send the height as soon as the iframe is loaded
+        appFrame.onload = function() {
             sendViewportHeight();
         };
 
+        // Also send it whenever the viewport size changes (e.g., rotation, browser UI appears/disappears)
         window.visualViewport.addEventListener('resize', sendViewportHeight);
+        
     </script>
 </body>
 </html>
